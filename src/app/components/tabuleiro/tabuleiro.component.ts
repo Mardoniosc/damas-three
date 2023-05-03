@@ -9,9 +9,24 @@ import * as THREE from 'three';
 export class TabuleiroComponent implements OnInit {
   @ViewChild('canvasContainer', { static: true }) canvasContainer!: ElementRef;
 
+  pieces: THREE.Group = new THREE.Group();
+
+  boardData: number[][] = [
+    // Estrutura de dados para as peças
+    [0, 2, 0, 2, 0, 2, 0, 2],
+    [2, 0, 2, 0, 2, 0, 2, 0],
+    [0, 2, 0, 2, 0, 2, 0, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [1, 0, 1, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 1, 0],
+  ];
+
   constructor() {}
+
   ngOnInit(): void {
-    throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
 
   ngAfterViewInit(): void {
@@ -51,7 +66,7 @@ export class TabuleiroComponent implements OnInit {
       for (let j = 0; j < 8; j++) {
         const geometry = new THREE.BoxGeometry(tileSize, tileSize, 1);
         const material = new THREE.MeshBasicMaterial({
-          color: (i + j) % 2 === 0 ? 0x808080 : 0xffffff,
+          color: (i + j) % 2 === 0 ? 0xffffff : 0x808080,
         });
         const tile = new THREE.Mesh(geometry, material);
         tile.position.x = (i - 3.5) * tileSize;
@@ -70,5 +85,38 @@ export class TabuleiroComponent implements OnInit {
     }
 
     animate();
+
+    // Criando as peças
+    let pieceSize = tileSize * 0.4; // Tamanho das peças
+
+    // Limpe as peças existentes antes de adicionar as novas
+    while (this.pieces.children.length) {
+      this.pieces.remove(this.pieces.children[0]);
+    }
+
+    // Percorra a estrutura de dados e renderize as peças
+    for (let i = 0; i < this.boardData.length; i++) {
+      for (let j = 0; j < this.boardData[i].length; j++) {
+        const pieceValue = this.boardData[i][j];
+        if (pieceValue === 1 || pieceValue === 2) {
+          const pieceGeometry = new THREE.CylinderGeometry(
+            pieceSize / 2,
+            pieceSize / 2,
+            pieceSize,
+            32
+          );
+          const pieceMaterial = new THREE.MeshBasicMaterial({
+            color: pieceValue === 1 ? 0x000000 : 0xffffff,
+          });
+          const piece = new THREE.Mesh(pieceGeometry, pieceMaterial);
+          piece.position.x = (j - 3.5) * tileSize;
+          piece.position.y = (i - 3.5) * tileSize;
+          this.pieces.add(piece);
+        }
+      }
+    }
+
+    // Adicione o grupo `pieces` à cena
+    scene.add(this.pieces);
   }
 }
